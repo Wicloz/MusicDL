@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>MusicDL</title>
+  <style>
+    .disabled {
+      visibility: hidden;
+      display: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="query-div">
+    <form id="query-form" action="">
+      <label for="query-url">URL</label>
+      <input id="query-url" autocomplete="off" value="https://www.youtube.com/shorts/-RE6sCKvJFU">
+      <button>Continue</button>
+    </form>
+  </div>
+
+  <div id="progress-div" class="disabled">
+  </div>
+
+  <div id="edit-div" class="disabled">
+    <img alt="Video Thumbnail" id="edit-img">
+    <form id="edit-form" action="">
+      <label for="edit-title">Title</label>
+      <input id="edit-title">
+      <label for="edit-genre">Album</label>
+      <input id="edit-album">
+      <label for="edit-genre">Genre</label>
+      <input id="edit-genre">
+      <button>Download</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    queryElem = document.getElementById('query-div');
+    progressElem = document.getElementById('progress-div');
+    editElem = document.getElementById('edit-div');
+
+    document.getElementById('query-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      input = document.getElementById('query-url');
+
+      if (input.value) {
+        socket.emit('query', input.value);
+        queryElem.classList.add("disabled");
+        progressElem.classList.remove("disabled");
+      }
+    });
+
+    document.getElementById('edit-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      socket.emit('download', {
+        'title': document.getElementById('edit-title').value,
+        'album': document.getElementById('edit-album').value,
+        'genre': document.getElementById('edit-genre').value,
+      });
+      editElem.classList.add("disabled");
+      progressElem.classList.remove("disabled");
+    });
+
+    socket.on('metadata', function (metadata) {
+      document.getElementById('edit-title').value = metadata['title'];
+      document.getElementById('edit-album').value = metadata['album'];
+      document.getElementById('edit-genre').value = metadata['genre'];
+
+      document.getElementById('edit-img').src = metadata['thumbnail'];
+
+      progressElem.classList.add("disabled");
+      editElem.classList.remove("disabled");
+    });
+
+    socket.on('finish', function (data) {
+      var anchorTag = document.createElement('a');
+
+      anchorTag.href = data['href'];
+      anchorTag.download = data['download'];
+
+      document.body.appendChild(anchorTag);
+      anchorTag.click();
+      document.body.removeChild(anchorTag);
+    });
+  </script>
+</body>
+
+</html>
