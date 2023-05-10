@@ -9,6 +9,20 @@
       display: none;
       pointer-events: none;
     }
+
+    #progress-div {
+      background-color: black;
+      border-radius: 13px;
+      padding: 3px;
+    }
+
+    #progress-done {
+      background-color: orange;
+      height: 20px;
+      border-radius: 10px;
+      width: 0%;
+    }
+
   </style>
 </head>
 
@@ -22,6 +36,7 @@
   </div>
 
   <div id="progress-div" class="disabled">
+    <div id="progress-done"></div>
   </div>
 
   <div id="edit-div" class="disabled">
@@ -37,9 +52,8 @@
     </form>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script>
-    var socket = io();
+    var websocket = new WebSocket('wss://' + window.location.hostname);
 
     queryElem = document.getElementById('query-div');
     progressElem = document.getElementById('progress-div');
@@ -50,7 +64,11 @@
       input = document.getElementById('query-url');
 
       if (input.value) {
-        socket.emit('query', input.value);
+        websocket.send(JSON.stringify({
+          command: 'download',
+          url: input.value,
+        }));
+
         queryElem.classList.add("disabled");
         progressElem.classList.remove("disabled");
       }
@@ -58,35 +76,46 @@
 
     document.getElementById('edit-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      socket.emit('download', {
-        'title': document.getElementById('edit-title').value,
-        'album': document.getElementById('edit-album').value,
-        'genre': document.getElementById('edit-genre').value,
-      });
+
+      websocket.send(JSON.stringify({
+        command: 'edited',
+        title: document.getElementById('edit-title').value,
+        album: document.getElementById('edit-album').value,
+        genre: document.getElementById('edit-genre').value,
+      }));
+
       editElem.classList.add("disabled");
       progressElem.classList.remove("disabled");
     });
 
-    socket.on('metadata', function (metadata) {
-      document.getElementById('edit-title').value = metadata['title'];
-      document.getElementById('edit-album').value = metadata['album'];
-      document.getElementById('edit-genre').value = metadata['genre'];
+    websocket.addEventListener('message', ({ data }) => {
+      let event = JSON.parse(data);
+      console.log(event);
 
-      document.getElementById('edit-img').src = metadata['thumbnail'];
+      if (event['command'] == 'progress') {
+        document.getElementById('progress-done').style.width = event['percentage'] + '%';
+      }
 
-      progressElem.classList.add("disabled");
-      editElem.classList.remove("disabled");
-    });
+      if (event['command'] == 'editor') {
+        document.getElementById('edit-img').src = event['thumbnail'];
+        document.getElementById('edit-title').value = event['title'];
+        document.getElementById('edit-album').value = event['album'];
+        document.getElementById('edit-genre').value = event['genre'];
 
-    socket.on('finish', function (data) {
-      var anchorTag = document.createElement('a');
+        progressElem.classList.add("disabled");
+        editElem.classList.remove("disabled");
+      }
 
-      anchorTag.href = data['href'];
-      anchorTag.download = data['download'];
+      if (event['command'] == 'finish') {
+        var anchorTag = document.createElement('a');
 
-      document.body.appendChild(anchorTag);
-      anchorTag.click();
-      document.body.removeChild(anchorTag);
+        anchorTag.href = event['href'];
+        anchorTag.download = event['download'];
+
+        document.body.appendChild(anchorTag);
+        anchorTag.click();
+        document.body.removeChild(anchorTag);
+      }
     });
   </script>
 </body>
