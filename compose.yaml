@@ -1,0 +1,13 @@
+services:
+
+  websocket:
+    build: ./
+    volumes:
+      - ./public/:/app/public/
+
+  nginx:
+    build: ./nginx/
+    volumes:
+      - ./public/:/app/public/
+    ports:
+      - 80:80
