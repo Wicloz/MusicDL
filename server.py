@@ -88,6 +88,7 @@ class Connection:
         mp3['album'] = album
         mp3['genre'] = genre
         mp3.save()
+        await self.send('progress', {'percentage': 100})
 
         await self.send('finish', {
             'href': '/downloads/' + self.token + '.mp3',
