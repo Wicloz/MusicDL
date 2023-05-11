@@ -1,7 +1,7 @@
 FROM alpine
 
 # grab main dependencies
-RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
+RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && chmod +x /usr/local/bin/yt-dlp
 RUN apk add --no-cache ffmpeg python3
 
 # install dependencies using PIP
