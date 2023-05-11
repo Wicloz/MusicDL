@@ -53,7 +53,7 @@
   </div>
 
   <script>
-    var websocket = new WebSocket('wss://' + window.location.hostname + '/socket');
+    var websocket = new WebSocket((window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + '/socket');
 
     queryElem = document.getElementById('query-div');
     progressElem = document.getElementById('progress-div');
