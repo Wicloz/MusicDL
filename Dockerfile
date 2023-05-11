@@ -4,7 +4,8 @@ FROM alpine
 RUN apk add --no-cache ffmpeg yt-dlp
 
 # install PIP requirements
-RUN apk add --no-cache py3-pip && pip3 install -r requirements.txt && apk del --no-cache py3-pip
+COPY requirements.txt /app/
+RUN apk add --no-cache py3-pip && pip3 install -r /app/requirements.txt && apk del --no-cache py3-pip
 
 # bundle application
 VOLUME /app/public/
