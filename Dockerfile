@@ -1,7 +1,7 @@
 FROM alpine
 
 # install additional packages
-RUN apk add --no-cache ffmpeg yt-dlp
+RUN apk add --no-cache python3 yt-dlp
 
 # install PIP requirements
 COPY requirements.txt /app/
@@ -15,4 +15,4 @@ COPY --chown=33:33 . /app/
 EXPOSE 5555
 WORKDIR /app/
 USER 33:33
-CMD /app/server.py
+ENTRYPOINT /app/entrypoint.sh
