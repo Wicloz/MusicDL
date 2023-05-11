@@ -33,9 +33,18 @@ class Connection:
         data['command'] = command
         await self.socket.send(json.dumps(data))
 
-    async def _yt_dlp(self, *args):
-        process = Popen(['yt-dlp', '--newline', '--output', Path(
-            './public/downloads/') / (self.token + '.%(ext)s'), *args],  stdout=PIPE)
+    async def process_initial_download(self, url):
+        process = Popen([
+            'yt-dlp', url,
+            '--newline',
+            '--output', './public/downloads/' + self.token + '.%(ext)s',
+            '--format', 'bestaudio',
+            '--extract-audio',
+            '--audio-format', 'mp3',
+            '--embed-thumbnail',
+            '--embed-metadata',
+            '--write-thumbnail',
+        ], stdout=PIPE)
 
         percentage = 0
         digits = 0
@@ -62,17 +71,6 @@ class Connection:
                     percentage = 0
                     digits = 0
                     fraction = False
-
-    async def process_initial_download(self, url):
-        await self._yt_dlp(
-            url,
-            '--format', 'bestaudio',
-            '--extract-audio',
-            '--audio-format', 'mp3',
-            '--embed-thumbnail',
-            '--embed-metadata',
-            '--write-thumbnail',
-        )
 
         mp3 = EasyID3('./public/downloads/' + self.token + '.mp3')
         await self.send('editor', {
