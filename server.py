@@ -76,7 +76,7 @@ class Connection:
 
         mp3 = EasyID3('./public/downloads/' + self.token + '.mp3')
         await self.send('editor', {
-            'thumbnail': '/public/downloads/' + self.token + '.webp',
+            'thumbnail': '/downloads/' + self.token + '.webp',
             'title': mp3.get('title', ''),
             'genre': mp3.get('genre', ''),
             'album': mp3.get('album', ''),
@@ -90,7 +90,7 @@ class Connection:
         mp3.save()
 
         await self.send('finish', {
-            'href': '/public/downloads/' + self.token + '.mp3',
+            'href': '/downloads/' + self.token + '.mp3',
             'download': title,
         })
 
