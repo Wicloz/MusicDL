@@ -3,11 +3,14 @@ services:
   websocket:
     build: ./
     volumes:
-      - ./public/:/app/public/
+      - public:/app/public/
 
   nginx:
     build: ./nginx/
     volumes:
-      - ./public/:/app/public/
+      - public:/app/public/
     ports:
       - 80:80
+
+volumes:
+  public:

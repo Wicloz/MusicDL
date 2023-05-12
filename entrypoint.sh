@@ -1,3 +1,3 @@
-rm -r public/downloads
-mkdir public/downloads
+rsync --recursive --delete ./built/ ./public/
+mkdir ./public/downloads/
 python3 -u server.py
