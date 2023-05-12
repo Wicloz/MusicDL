@@ -2,23 +2,17 @@ import asyncio
 import websockets
 import json
 from secrets import choice
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from subprocess import Popen, PIPE
 from mutagen.easyid3 import EasyID3
+from tempfile import TemporaryDirectory
 
 
 class Connection:
     def __init__(self, websocket):
-        alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        self.token = ''.join(choice(alphabet) for _ in range(32))
         self.socket = websocket
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *_):
-        for file in Path('./public/downloads/').glob(self.token + '.*'):
-            file.unlink()
+        self.temp = Path(TemporaryDirectory(dir='public/downloads').name)
+        self.web = PurePosixPath('/downloads/') / self.temp.name
 
     async def message(self, content):
         parsed = json.loads(content)
@@ -35,7 +29,7 @@ class Connection:
         process = Popen([
             'yt-dlp', url,
             '--newline',
-            '--output', './public/downloads/' + self.token + '.%(ext)s',
+            '--output', self.temp / 'ytdlp',
             '--format', 'bestaudio',
             '--extract-audio',
             '--audio-format', 'mp3',
@@ -70,16 +64,16 @@ class Connection:
                     digits = 0
                     fraction = False
 
-        mp3 = EasyID3('./public/downloads/' + self.token + '.mp3')
+        mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         await self.send('editor', {
-            'thumbnail': '/downloads/' + self.token + '.webp',
+            'thumbnail': str(self.web / 'ytdlp.webp'),
             'title': mp3.get('title', ''),
             'genre': mp3.get('genre', ''),
             'album': mp3.get('album', ''),
         })
 
     async def process_edited_metadata(self, title, album, genre):
-        mp3 = EasyID3('./public/downloads/' + self.token + '.mp3')
+        mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['title'] = title
         mp3['album'] = album
         mp3['genre'] = genre
@@ -87,15 +81,15 @@ class Connection:
         await self.send('progress', {'percentage': 100})
 
         await self.send('finish', {
-            'href': '/downloads/' + self.token + '.mp3',
+            'href': str(self.web / 'ytdlp.mp3'),
             'download': title,
         })
 
 
 async def handler(websocket):
-    with Connection(websocket) as connection:
-        while True:
-            await connection.message(await websocket.recv())
+    connection = Connection(websocket)
+    while True:
+        await connection.message(await websocket.recv())
 
 
 async def main():
