@@ -1,0 +1,18 @@
+.disabled {
+    visibility: hidden;
+    display: none;
+    pointer-events: none;
+}
+
+#progress-div {
+    background-color: black;
+    border-radius: 13px;
+    padding: 3px;
+}
+
+#progress-done {
+    background-color: orange;
+    height: 20px;
+    border-radius: 10px;
+    width: 0%;
+}

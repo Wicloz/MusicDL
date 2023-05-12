@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>MusicDL</title>
+  <link rel="stylesheet" href="style.scss">
+</head>
+
+<body>
+  <div id="query-div">
+    <form id="query-form" action="">
+      <label for="query-url">URL</label>
+      <input id="query-url" autocomplete="off" value="https://www.youtube.com/shorts/-RE6sCKvJFU">
+      <button>Continue</button>
+    </form>
+  </div>
+
+  <div id="progress-div" class="disabled">
+    <div id="progress-done"></div>
+  </div>
+
+  <div id="edit-div" class="disabled">
+    <img alt="Video Thumbnail" id="edit-img">
+    <form id="edit-form" action="">
+      <label for="edit-title">Title</label>
+      <input id="edit-title">
+      <label for="edit-genre">Album</label>
+      <input id="edit-album">
+      <label for="edit-genre">Genre</label>
+      <input id="edit-genre">
+      <button>Download</button>
+    </form>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
