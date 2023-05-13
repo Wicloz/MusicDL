@@ -1,36 +1,48 @@
-var websocket = new WebSocket((window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + '/socket');
+import $ from 'jquery';
 
-queryElem = document.getElementById('query-div');
-progressElem = document.getElementById('progress-div');
-editElem = document.getElementById('edit-div');
+const websocket = new WebSocket(
+    (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + '/socket',
+);
 
-document.getElementById('query-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    input = document.getElementById('query-url');
+function setStage(active) {
+    if (active === 'progress') {
+        $('#progress-done').width('0%');
+    }
 
-    if (input.value) {
-        websocket.send(JSON.stringify({
-            command: 'download',
-            url: input.value,
-        }));
+    for (const element of ['query', 'progress', 'edit']) {
+        if (element === active) {
+            $('#' + element + '-div').removeClass('disabled');
+        } else {
+            $('#' + element + '-div').addClass('disabled');
+        }
+    }
+}
 
-        queryElem.classList.add("disabled");
-        progressElem.classList.remove("disabled");
+function message(command, data) {
+    data['command'] = command;
+    console.log(data);
+    websocket.send(JSON.stringify(data));
+}
+
+$('#query-form').on('submit', (event) => {
+    event.preventDefault();
+
+    let url = $('#query-url').val();
+    if (url) {
+        message('download', { url: url });
+        setStage('progress');
     }
 });
 
-document.getElementById('edit-form').addEventListener('submit', function (e) {
-    e.preventDefault();
+$('#edit-form').on('submit', (event) => {
+    event.preventDefault();
 
-    websocket.send(JSON.stringify({
-        command: 'edited',
-        title: document.getElementById('edit-title').value,
-        album: document.getElementById('edit-album').value,
-        genre: document.getElementById('edit-genre').value,
-    }));
-
-    editElem.classList.add("disabled");
-    progressElem.classList.remove("disabled");
+    message('edited', {
+        title: $('#edit-title').val(),
+        album: $('#edit-album').val(),
+        genre: $('#edit-genre').val(),
+    });
+    setStage('progress');
 });
 
 websocket.addEventListener('message', ({ data }) => {
@@ -38,27 +50,27 @@ websocket.addEventListener('message', ({ data }) => {
     console.log(event);
 
     if (event['command'] == 'progress') {
-        document.getElementById('progress-done').style.width = event['percentage'] + '%';
+        $('#progress-done').width(event['percentage'] + '%');
     }
 
     if (event['command'] == 'editor') {
-        document.getElementById('edit-img').src = event['thumbnail'];
-        document.getElementById('edit-title').value = event['title'];
-        document.getElementById('edit-album').value = event['album'];
-        document.getElementById('edit-genre').value = event['genre'];
+        $('#edit-img').attr('src', event['thumbnail']);
 
-        progressElem.classList.add("disabled");
-        editElem.classList.remove("disabled");
+        $('#edit-title').val(event['title']);
+        $('#edit-album').val(event['album']);
+        $('#edit-genre').val(event['genre']);
+
+        setStage('edit');
     }
 
     if (event['command'] == 'finish') {
-        var anchorTag = document.createElement('a');
+        let anchor = $('<a>');
+        anchor.attr('href', event['href']);
+        anchor.attr('download', event['download']);
+        anchor.addClass('hidden');
 
-        anchorTag.href = event['href'];
-        anchorTag.download = event['download'];
-
-        document.body.appendChild(anchorTag);
-        anchorTag.click();
-        document.body.removeChild(anchorTag);
+        $('body').append(anchor);
+        anchor[0].click();
+        anchor.remove();
     }
 });
