@@ -4,8 +4,10 @@ import json
 from secrets import choice
 from pathlib import Path, PurePosixPath
 from subprocess import Popen, PIPE
-from mutagen.easyid3 import EasyID3
 from tempfile import TemporaryDirectory
+
+from mutagen.easyid3 import EasyID3
+EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
 
 
 class Connection:
@@ -19,7 +21,9 @@ class Connection:
         if parsed['command'] == 'download':
             await self.process_initial_download(parsed['url'])
         if parsed['command'] == 'edited':
-            await self.process_edited_metadata(parsed['title'], parsed['album'], parsed['genre'])
+            await self.process_edited_metadata(
+                parsed['title'], parsed['album'], parsed['genre'], parsed['artist'],
+            )
 
     async def send(self, command, data):
         data['command'] = command
@@ -70,19 +74,27 @@ class Connection:
             'title': mp3.get('title', ''),
             'genre': mp3.get('genre', ''),
             'album': mp3.get('album', ''),
+            'artist': mp3.get('artist', ''),
         })
 
-    async def process_edited_metadata(self, title, album, genre):
+    async def process_edited_metadata(self, title, album, genre, artists):
+        artists = artists.split('\n')
+        artists_list = [' '.join(reversed(artist.split(', ')))
+                        for artist in artists]
+        artists_fancy = ' & '.join(artists_list)
+
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['title'] = title
         mp3['album'] = album
         mp3['genre'] = genre
+        mp3['artists'] = artists_list
+        mp3['artist'] = artists_fancy
         mp3.save()
-        await self.send('progress', {'percentage': 100})
 
+        await self.send('progress', {'percentage': 100})
         await self.send('finish', {
             'href': str(self.web / 'ytdlp.mp3'),
-            'download': title,
+            'download': artists_fancy + ' - ' + title,
         })
 
 

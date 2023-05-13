@@ -41,6 +41,7 @@ $('#edit-form').on('submit', (event) => {
         title: $('#edit-title').val(),
         album: $('#edit-album').val(),
         genre: $('#edit-genre').val(),
+        artist: $('#edit-artist').val(),
     });
     setStage('progress');
 });
@@ -59,6 +60,7 @@ websocket.addEventListener('message', ({ data }) => {
         $('#edit-title').val(event['title']);
         $('#edit-album').val(event['album']);
         $('#edit-genre').val(event['genre']);
+        $('#edit-artist').val(event['artist']);
 
         setStage('edit');
     }
