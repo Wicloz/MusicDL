@@ -3,7 +3,7 @@ import websockets
 import json
 from secrets import choice
 from pathlib import Path, PurePosixPath
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, run
 from tempfile import TemporaryDirectory
 
 from mutagen.easyid3 import EasyID3
@@ -30,6 +30,10 @@ class Connection:
         await self.socket.send(json.dumps(data))
 
     async def process_initial_download(self, url):
+        metadata = json.loads(run([
+            'yt-dlp', url, '--dump-json',
+        ], stdout=PIPE).stdout)
+
         process = Popen([
             'yt-dlp', url,
             '--newline',
@@ -75,6 +79,8 @@ class Connection:
             'genre': mp3.get('genre', ''),
             'album': mp3.get('album', ''),
             'artist': mp3.get('artist', ''),
+            'uploader': metadata['uploader'],
+            'name': metadata['title'],
         })
 
     async def process_edited_metadata(self, title, album, genre, artists):

@@ -56,6 +56,8 @@ websocket.addEventListener('message', ({ data }) => {
 
     if (event['command'] == 'editor') {
         $('#edit-img').attr('src', event['thumbnail']);
+        $('#edit-header-1').val(event['name']);
+        $('#edit-header-2').val(event['uploader']);
 
         $('#edit-title').val(event['title']);
         $('#edit-album').val(event['album']);
