@@ -6,7 +6,7 @@ const websocket = new WebSocket(
 
 function setStage(active) {
     if (active === 'progress') {
-        $('#progress-done').width('0%');
+        $('#progress-filled').width('0%');
     }
 
     for (const element of ['query', 'progress', 'edit']) {
@@ -51,7 +51,7 @@ websocket.addEventListener('message', ({ data }) => {
     console.log(event);
 
     if (event['command'] == 'progress') {
-        $('#progress-done').width(event['percentage'] + '%');
+        $('#progress-filled').width(event['percentage'] + '%');
     }
 
     if (event['command'] == 'editor') {
