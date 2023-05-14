@@ -9,8 +9,8 @@
 <body>
   <div id="query-div">
     <form id="query-form" action="" class="background content-column">
-      <p>Enter URL for <code>yt-dlp</code>, playlists not supported:</p>
       <input id="query-url" autocomplete="off">
+      <span>Enter URL for <code>yt-dlp</code>, playlists not supported:</span>
       <button>Continue</button>
     </form>
   </div>
@@ -18,7 +18,7 @@
   <div id="progress-div" class="disabled">
     <div class="background content-column">
       <div class="content-row">
-        <p>Processing ...</p>
+        <span>Processing ...</span>
       </div>
       <div id="progress-empty">
         <div id="progress-filled">
@@ -30,13 +30,13 @@
   <div id="edit-div" class="disabled">
     <div class="content-row">
       <div class="background content-column">
-        <p id="video-uploader"></p>
+        <span id="video-uploader"></span>
         <img alt="Cover Art" id="video-cover-art" class="thumbnail">
-        <p id="video-name"></p>
+        <span id="video-name"></span>
       </div>
       <form id="edit-form" action="" class="background content-column">
-        <p>Artists, one per line, use offical format for example "Smith, John":</p>
         <textarea id="edit-artist"></textarea>
+        <span>Artists, one per line, use offical format for example "Smith, John":</span>
         <div class="content-row">
           <label for="edit-title">Title:</label>
           <input id="edit-title">
