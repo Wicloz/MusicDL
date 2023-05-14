@@ -28,27 +28,26 @@
   </div>
 
   <div id="edit-div" class="disabled">
-    <form id="edit-form" action="" class="background content-column">
-      <div class="content-row">
-        <input id="edit-header-1" disabled>
-        <span>by</span>
-        <input id="edit-header-2" disabled>
+    <div class="content-row">
+      <div class="background content-column">
+        <p id="video-uploader"></p>
+        <img alt="Cover Art" id="video-cover-art" class="thumbnail">
+        <p id="video-name"></p>
       </div>
-      <div class="content-row">
-        <img alt="Video Thumbnail" id="edit-img" class="thumbnail">
-      </div>
-      <p>Artists, one per line, use offical format for example "Smith, John":</p>
-      <textarea id="edit-artist"></textarea>
-      <div class="content-row">
-        <label for="edit-title">Title:</label>
-        <input id="edit-title">
-        <label for="edit-genre">Album:</label>
-        <input id="edit-album">
-        <label for="edit-genre">Genre:</label>
-        <input id="edit-genre">
-      </div>
-      <button>Download</button>
-    </form>
+      <form id="edit-form" action="" class="background content-column">
+        <p>Artists, one per line, use offical format for example "Smith, John":</p>
+        <textarea id="edit-artist"></textarea>
+        <div class="content-row">
+          <label for="edit-title">Title:</label>
+          <input id="edit-title">
+          <label for="edit-genre">Album:</label>
+          <input id="edit-album">
+          <label for="edit-genre">Genre:</label>
+          <input id="edit-genre">
+        </div>
+        <button>Download</button>
+      </form>
+    </div>
   </div>
 
   <script src="main.js" type="module"></script>
