@@ -41,7 +41,7 @@ $('#edit-form').on('submit', (event) => {
         title: $('#edit-title').val(),
         album: $('#edit-album').val(),
         genre: $('#edit-genre').val(),
-        artist: $('#edit-artist').val(),
+        artists: $('#edit-artist').val(),
     });
     setStage('progress');
 });

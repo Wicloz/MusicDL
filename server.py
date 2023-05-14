@@ -11,25 +11,17 @@ EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
 
 
 class Connection:
-    def __init__(self, websocket):
-        self.socket = websocket
+    def __init__(self):
         self.temp = Path(TemporaryDirectory(dir='public/downloads').name)
         self.web = PurePosixPath('/downloads/') / self.temp.name
 
-    async def message(self, content):
-        parsed = json.loads(content)
-        if parsed['command'] == 'download':
-            await self.process_initial_download(parsed['url'])
-        if parsed['command'] == 'edited':
-            await self.process_edited_metadata(
-                parsed['title'], parsed['album'], parsed['genre'], parsed['artist'],
-            )
+    def process(self, command, data):
+        if command == 'download':
+            return self._process_initial_download(**data)
+        if command == 'edited':
+            return self._process_edited_metadata(**data)
 
-    async def send(self, command, data):
-        data['command'] = command
-        await self.socket.send(json.dumps(data))
-
-    async def process_initial_download(self, url):
+    def _process_initial_download(self, url):
         metadata = json.loads(run([
             'yt-dlp', url, '--dump-json',
         ], stdout=PIPE).stdout)
@@ -66,7 +58,7 @@ class Connection:
                 elif character == '.':
                     fraction = True
                 elif character == '%':
-                    await self.send('progress', {'percentage': percentage})
+                    yield 'progress', {'percentage': percentage}
                     percentage = 0
                     digits = 0
                     fraction = False
@@ -76,7 +68,7 @@ class Connection:
                     fraction = False
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
-        await self.send('editor', {
+        yield 'editor', {
             'thumbnail': str(self.web / 'ytdlp.webp'),
             'title': mp3.get('title', ''),
             'genre': mp3.get('genre', ''),
@@ -84,9 +76,9 @@ class Connection:
             'artist': mp3.get('artist', ''),
             'uploader': metadata['uploader'],
             'name': metadata['title'],
-        })
+        }
 
-    async def process_edited_metadata(self, title, album, genre, artists):
+    def _process_edited_metadata(self, title, album, genre, artists):
         artists = artists.split('\n')
         artists_list = [' '.join(reversed(artist.split(', ')))
                         for artist in artists]
@@ -100,17 +92,22 @@ class Connection:
         mp3['artist'] = artists_fancy
         mp3.save()
 
-        await self.send('progress', {'percentage': 100})
-        await self.send('finish', {
+        yield 'progress', {'percentage': 100}
+        yield 'finish', {
             'href': str(self.web / 'ytdlp.mp3'),
             'download': artists_fancy + ' - ' + title,
-        })
+        }
 
 
 async def handler(websocket):
-    connection = Connection(websocket)
-    while True:
-        await connection.message(await websocket.recv())
+    connection = Connection()
+    async for message in websocket:
+        data = json.loads(message)
+        command = data.pop('command')
+        for command, data in connection.process(command, data):
+            data['command'] = command
+            await websocket.send(json.dumps(data))
+            await asyncio.sleep(0)
 
 
 async def main():
