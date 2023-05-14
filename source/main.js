@@ -70,7 +70,7 @@ websocket.addEventListener('message', ({ data }) => {
     if (event['command'] == 'finish') {
         let anchor = $('<a>');
         anchor.attr('href', event['href']);
-        anchor.attr('download', event['download']);
+        anchor.attr('download', event['download'] + '.mp3');
         anchor.addClass('hidden');
 
         $('body').append(anchor);
