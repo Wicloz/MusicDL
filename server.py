@@ -56,12 +56,15 @@ class Connection:
 
             for character in line.decode('UTF8'):
                 if character in {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}:
-                    percentage += int(character) * \
-                        (0.1 if fraction else 10) ** digits
-                    digits += 1
+                    if not fraction:
+                        percentage *= 10
+                        percentage += int(character)
+                    else:
+                        digits += 1
+                        percentage += int(character) / (10 ** digits)
+
                 elif character == '.':
                     fraction = True
-                    digits = 1
                 elif character == '%':
                     await self.send('progress', {'percentage': percentage})
                     percentage = 0
