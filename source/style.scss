@@ -42,7 +42,7 @@ body {
     flex-wrap: wrap;
 }
 
-input {
+input[type="text"], input:not([type]) {
     min-width: 10em;
     flex-grow: 1;
 }
