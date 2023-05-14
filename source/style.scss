@@ -4,6 +4,7 @@
 @import "bootstrap/scss/mixins";
 @import "bootstrap/scss/root";
 @import "bootstrap/scss/reboot";
+@import "bootstrap/scss/progress";
 
 .disabled {
     display: none !important;
@@ -53,14 +54,6 @@ input {
     border: 1px solid black;
 }
 
-#progress-empty {
-    background-color: black;
-    padding: 3px;
-    width: 50vw;
-}
-
-#progress-filled {
-    background-color: white;
-    height: 30px;
-    transition: width 1s;
+.progress {
+    width: calc(50vw - 20px);
 }
