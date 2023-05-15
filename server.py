@@ -5,6 +5,7 @@ from secrets import choice
 from pathlib import Path, PurePosixPath
 from subprocess import Popen, PIPE, run
 from tempfile import TemporaryDirectory
+from unidecode import unidecode
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -20,6 +21,14 @@ class Connection:
             return self._process_initial_download(**data)
         if command == 'edited':
             return self._process_edited_metadata(**data)
+        if command == 'romanize':
+            return self._romanize(**data)
+
+    def _romanize(self, text, number):
+        yield 'romanized', {
+            'text': unidecode(text),
+            'number': number,
+        }
 
     def _process_initial_download(self, url):
         metadata = json.loads(run([
