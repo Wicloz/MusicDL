@@ -101,7 +101,6 @@ class Connection:
         mp3['artist'] = artists_fancy
         mp3.save()
 
-        yield 'progress', {'percentage': 100}
         yield 'finish', {
             'href': str(self.web / 'ytdlp.mp3'),
             'download': artists_fancy + ' - ' + title,
