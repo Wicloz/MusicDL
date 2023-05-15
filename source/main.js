@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import _ from 'lodash';
 
 const websocket = new WebSocket(
     (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + '/socket',
