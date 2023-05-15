@@ -73,7 +73,7 @@ websocket.addEventListener('message', ({ data }) => {
         let anchor = $('<a>');
         anchor.attr('href', event['href']);
         anchor.attr('download', event['download'] + '.mp3');
-        anchor.addClass('hidden');
+        anchor.addClass('disabled');
 
         $('body').append(anchor);
         anchor[0].click();
