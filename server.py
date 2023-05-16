@@ -6,7 +6,7 @@ from pathlib import Path, PurePosixPath
 from subprocess import Popen, PIPE, run
 from tempfile import TemporaryDirectory
 from unidecode import unidecode
-from os import listdir
+from os import listdir, getenv
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -125,7 +125,8 @@ async def handler(websocket):
 
 
 async def main():
-    async with websockets.serve(handler, '', 5555):
+    port = int(getenv('PORT', '5555'))
+    async with websockets.serve(handler, '', port):
         await asyncio.Future()
 
 
