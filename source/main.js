@@ -80,3 +80,7 @@ websocket.addEventListener('message', ({ data }) => {
         anchor.remove();
     }
 });
+
+$('#edit-title, #edit-album, #edit-genre').on('change', (event) => {
+    event.target.value = _.trim(event.target.value);
+});
