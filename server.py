@@ -26,7 +26,7 @@ class Connection:
 
     def _romanize(self, text, number):
         yield 'romanized', {
-            'text': unidecode(text),
+            'text': unidecode(text).strip(),
             'number': number,
         }
 
