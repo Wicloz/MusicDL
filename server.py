@@ -6,6 +6,7 @@ from pathlib import Path, PurePosixPath
 from subprocess import Popen, PIPE, run
 from tempfile import TemporaryDirectory
 from unidecode import unidecode
+from os import listdir
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -77,8 +78,9 @@ class Connection:
                     fraction = False
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
+        thumbnail, = (item for item in listdir(self.temp) if item != 'ytdlp.mp3')
         yield 'editor', {
-            'thumbnail': str(self.web / 'ytdlp.webp'),
+            'thumbnail': str(self.web / thumbnail),
             'title': mp3.get('title', ''),
             'genre': mp3.get('genre', ''),
             'album': mp3.get('album', ''),
