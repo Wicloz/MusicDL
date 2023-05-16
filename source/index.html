@@ -35,8 +35,18 @@
         <span id="video-name"></span>
       </div>
       <form id="edit-form" action="" class="background content-column">
-        <span>Artists, one per line, use offical format for example "Smith, John":</span>
-        <textarea id="edit-artist"></textarea>
+
+        <div class="content-row" id="edit-artist-0">
+          <span>Artist:</span>
+          <input id="edit-artist-first-0" placeholder="First Name">
+          <input id="edit-artist-last-0" placeholder="Last Name">
+          <input id="edit-artist-proper-0" type="checkbox" checked>
+          <label for="edit-artist-proper-0">Proper Name</label>
+          <label for="edit-artist-romaji-0">Romanized:</label>
+          <input id="edit-artist-romaji-0">
+          <button id="edit-artist-new-0">+</button>
+        </div>
+
         <div class="content-row">
           <label for="edit-title">Title:</label>
           <input id="edit-title">
@@ -45,6 +55,7 @@
           <label for="edit-genre">Genre:</label>
           <input id="edit-genre">
         </div>
+
         <button>Download</button>
       </form>
     </div>

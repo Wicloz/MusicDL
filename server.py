@@ -88,22 +88,20 @@ class Connection:
         }
 
     def _process_edited_metadata(self, title, album, genre, artists):
-        artists = artists.split('\n')
-        artists_list = [' '.join(reversed(artist.split(', ')))
-                        for artist in artists]
-        artists_fancy = ' & '.join(artists_list)
+        artist_field = ' & '.join(artist['pretty'] for artist in artists)
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['title'] = title
         mp3['album'] = album
         mp3['genre'] = genre
-        mp3['artists'] = artists_list
-        mp3['artist'] = artists_fancy
+        mp3['artists'] = [artist['pretty'] for artist in artists]
+        mp3['artist'] = artist_field
+        mp3['artistsort'] = [artist['romanized'].lower() for artist in artists]
         mp3.save()
 
         yield 'finish', {
             'href': str(self.web / 'ytdlp.mp3'),
-            'download': artists_fancy + ' - ' + title,
+            'download': artist_field + ' - ' + title,
         }
 
 
