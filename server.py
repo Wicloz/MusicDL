@@ -109,7 +109,13 @@ class Connection:
 
 async def handler(websocket):
     connection = Connection()
-    async for message in websocket:
+
+    while True:
+        try:
+            message = await websocket.recv()
+        except websockets.ConnectionClosedOK:
+            break
+
         data = json.loads(message)
         command = data.pop('command')
         for command, data in connection.process(command, data):
