@@ -38,4 +38,5 @@ USER $UID:$GID
 
 # start websocket server
 EXPOSE 5555
+ENV BIND='' PORT='5555'
 ENTRYPOINT /app/entrypoint.sh

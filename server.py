@@ -126,8 +126,9 @@ async def handler(websocket):
 
 async def main():
     port = int(getenv('PORT', '5555'))
-    async with websockets.serve(handler, '', port):
         await asyncio.Future()
+    bind = getenv('BIND', 'localhost')
+    async with websockets.serve(handler, bind, port):
 
 
 if __name__ == '__main__':
