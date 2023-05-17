@@ -121,8 +121,12 @@ async def handler(websocket):
         command = data.pop('command')
         for command, data in connection.process(command, data):
             data['command'] = command
-            await websocket.send(json.dumps(data))
-            await asyncio.sleep(0)
+
+            try:
+                await websocket.send(json.dumps(data))
+                await asyncio.sleep(0)
+            except websockets.ConnectionClosedOK:
+                break
 
 
 async def main():
