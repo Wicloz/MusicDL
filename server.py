@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE, run
 from tempfile import TemporaryDirectory
 from unidecode import unidecode
 from os import listdir, getenv
+from signal import signal, SIGTERM, SIGINT
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -125,10 +126,19 @@ async def handler(websocket):
 
 
 async def main():
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+
+    def signal_to_stop(_1, _2):
+        stop.set_result(None)
+
+    signal(SIGTERM, signal_to_stop)
+    signal(SIGINT, signal_to_stop)
+
     port = int(getenv('PORT', '5555'))
-        await asyncio.Future()
     bind = getenv('BIND', 'localhost')
     async with websockets.serve(handler, bind, port):
+        await stop
 
 
 if __name__ == '__main__':
