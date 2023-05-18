@@ -33,6 +33,8 @@ class Downloader:
         }
 
     def _process_initial_download(self, url):
+        yield 'progress', {'percentage': 0, 'message': 'Preparing'}
+
         metadata = json.loads(run([
             'yt-dlp', url, '--dump-json',
         ], stdout=PIPE).stdout)
@@ -53,30 +55,34 @@ class Downloader:
         digits = 0
         fraction = False
 
-        for line in process.stdout:
-            if not line:
-                break
+        while character := process.stdout.read(1):
+            pass
 
-            for character in line.decode('UTF8'):
-                if character in {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}:
-                    if not fraction:
-                        percentage *= 10
-                        percentage += int(character)
-                    else:
-                        digits += 1
-                        percentage += int(character) / (10 ** digits)
-
-                elif character == '.':
-                    fraction = True
-                elif character == '%':
-                    yield 'progress', {'percentage': percentage}
-                    percentage = 0
-                    digits = 0
-                    fraction = False
+            if character in {b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'}:
+                if not fraction:
+                    percentage *= 10
+                    percentage += int(character)
                 else:
-                    percentage = 0
-                    digits = 0
-                    fraction = False
+                    digits += 1
+                    percentage += int(character) / (10 ** digits)
+
+            elif character == b'.':
+                fraction = True
+            elif character == b'%':
+                if percentage == 100:
+                    break
+
+                yield 'progress', {'percentage': percentage, 'message': 'Downloading'}
+                percentage = 0
+                digits = 0
+                fraction = False
+            else:
+                percentage = 0
+                digits = 0
+                fraction = False
+
+        yield 'progress', {'percentage': 100, 'message': 'Processing'}
+        process.wait()
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         thumbnail, = (item for item in listdir(self.temp) if item != 'ytdlp.mp3')

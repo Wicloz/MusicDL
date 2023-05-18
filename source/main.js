@@ -58,6 +58,7 @@ websocket.addEventListener('message', ({ data }) => {
     console.log(event);
 
     if (event['command'] == 'progress') {
+        $('#progress-message').text(event['message']);
         $('#progress-done').width(event['percentage'] + '%');
         $('#progress-done').text(event['percentage'] + '%');
     }
