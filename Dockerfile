@@ -31,11 +31,14 @@ RUN mkdir /app/built/downloads/
 COPY server.py /app/
 COPY entrypoint.sh /app/
 
+# prepare cache folder
+ENV XDG_CACHE_HOME=/app/cache/
+RUN install -o 1000 -g 1000 -d /app/cache/
+
 # prepare working directory and user
 WORKDIR /app/
-ENV UID=33 GID=33
-RUN install -o $UID -g $GID -d /app/public/
-USER $UID:$GID
+RUN install -o 1000 -g 1000 -d /app/public/
+USER 1000:1000
 
 # start websocket server
 EXPOSE 5555
