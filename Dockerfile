@@ -25,6 +25,7 @@ RUN apk add --no-cache py3-pip && pip3 install -r /app/requirements.txt && apk d
 # copy static files from build container
 VOLUME /app/public/
 COPY --from=builder /app/public/ /app/built/
+RUN mkdir /app/built/downloads/
 
 # install remaining files
 COPY server.py /app/
