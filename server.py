@@ -13,7 +13,7 @@ from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
 
 
-class Connection:
+class Downloader:
     def __init__(self):
         self.temp = Path(TemporaryDirectory(dir='public/downloads').name)
         self.web = PurePosixPath('/downloads/') / self.temp.name
@@ -109,7 +109,7 @@ class Connection:
 
 
 async def handler(websocket):
-    connection = Connection()
+    downloader = Downloader()
 
     while True:
         try:
@@ -119,7 +119,7 @@ async def handler(websocket):
 
         data = json.loads(message)
         command = data.pop('command')
-        for command, data in connection.process(command, data):
+        for command, data in downloader.process(command, data):
             data['command'] = command
 
             try:
