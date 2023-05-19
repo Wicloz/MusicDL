@@ -41,8 +41,8 @@ class Downloader:
 
         process = Popen([
             'yt-dlp', url,
-            '--newline',
             '--output', self.temp / 'ytdlp',
+            '--progress',
             '--format', 'bestaudio',
             '--extract-audio',
             '--audio-format', 'mp3',
