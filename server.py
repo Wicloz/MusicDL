@@ -11,6 +11,8 @@ from signal import signal, SIGTERM, SIGINT
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
+EasyID3.RegisterTXXXKey('purl', 'purl')
+EasyID3.RegisterTXXXKey('description', 'description')
 
 
 class Downloader:
@@ -32,6 +34,13 @@ class Downloader:
             'number': number,
         }
 
+    @staticmethod
+    def _extract(metadata, *keys):
+        for key in keys:
+            if key in metadata:
+                return metadata[key]
+        return ''
+
     def _process_initial_download(self, url):
         yield 'progress', {'percentage': 0, 'message': 'Preparing'}
 
@@ -47,7 +56,6 @@ class Downloader:
             '--extract-audio',
             '--audio-format', 'mp3',
             '--embed-thumbnail',
-            '--embed-metadata',
             '--write-thumbnail',
         ], stdout=PIPE)
 
@@ -85,15 +93,20 @@ class Downloader:
         process.wait()
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
+        mp3['date'] = self._extract(metadata, 'upload_date')
+        mp3['description'] = self._extract(metadata, 'description')
+        mp3['purl'] = self._extract(metadata, 'webpage_url')
+        mp3.save()
+
         thumbnail, = (item for item in listdir(self.temp) if item != 'ytdlp.mp3')
         yield 'editor', {
+            'title': self._extract(metadata, 'track', 'title'),
+            'genre': self._extract(metadata, 'genre'),
+            'album': self._extract(metadata, 'album'),
+            'artist': self._extract(metadata, 'artist', 'creator', 'uploader', 'uploader_id'),
             'thumbnail': str(self.web / thumbnail),
-            'title': mp3.get('title', ''),
-            'genre': mp3.get('genre', ''),
-            'album': mp3.get('album', ''),
-            'artist': mp3.get('artist', ''),
-            'uploader': metadata['uploader'],
-            'name': metadata['title'],
+            'uploader': self._extract(metadata, 'uploader'),
+            'name': self._extract(metadata, 'title'),
         }
 
     def _process_edited_metadata(self, title, album, genre, artists):
