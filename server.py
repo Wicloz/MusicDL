@@ -133,19 +133,16 @@ async def handler(websocket):
     while True:
         try:
             message = await websocket.recv()
-        except websockets.ConnectionClosedOK:
-            break
 
-        data = json.loads(message)
-        command = data.pop('command')
-        for command, data in downloader.process(command, data):
-            data['command'] = command
+            data = json.loads(message)
+            command = data.pop('command')
+            for command, data in downloader.process(command, data):
+                data['command'] = command
 
-            try:
                 await websocket.send(json.dumps(data))
                 await asyncio.sleep(0)
-            except websockets.ConnectionClosedOK:
-                break
+        except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
+            break
 
 
 async def main():
