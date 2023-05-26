@@ -156,8 +156,8 @@ async def main():
     signal(SIGINT, signal_to_stop)
 
     port = int(getenv('PORT', '5555'))
-    bind = getenv('BIND', 'localhost')
-    async with websockets.serve(handler, bind, port):
+    host = getenv('HOST', 'localhost')
+    async with websockets.serve(handler, host, port):
         await stop
 
 
