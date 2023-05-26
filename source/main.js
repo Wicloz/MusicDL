@@ -19,17 +19,12 @@ function setStage(active) {
     }
 }
 
-function message(command, data) {
-    console.log(command, data);
-    websocket.emit(command, data);
-}
-
 $('#query-form').on('submit', (event) => {
     event.preventDefault();
 
     let url = $('#query-url').val();
     if (url) {
-        message('download', { url: url });
+        websocket.emit('download', { url: url });
         setStage('progress');
     }
 });
@@ -37,7 +32,7 @@ $('#query-form').on('submit', (event) => {
 $('#edit-form').on('submit', (event) => {
     event.preventDefault();
 
-    message('edited', {
+    websocket.emit('edited', {
         title: $('#edit-title').val(),
         album: $('#edit-album').val(),
         genre: $('#edit-genre').val(),
@@ -88,7 +83,7 @@ websocket.on('finish', (event) => {
 
 function romanizeArtist(number) {
     let lastName = $('#edit-artist-last-' + number).val();
-    message('romanize', {
+    websocket.emit('romanize', {
         text: (lastName ? lastName + ' ' : '') + $('#edit-artist-first-' + number).val(),
         number: number,
     });

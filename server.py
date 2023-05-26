@@ -133,18 +133,15 @@ connections = {}
 
 @sio.event
 def connect(sid, _1, _2):
-    print('connected')
     connections[sid] = Downloader()
 
 
 @sio.event
 def disconnect(sid):
-    print('disconnected')
     del connections[sid]
 
 
 @sio.on('*')
 def process(command, sid, data):
-    print(command, data)
     for command, data in connections[sid].process(command, data):
         sio.emit(command, data, sid)
