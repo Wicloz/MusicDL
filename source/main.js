@@ -1,9 +1,8 @@
 import $ from 'jquery';
 import _ from 'lodash';
 
-const websocket = new WebSocket(
-    (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + '/socket',
-);
+import io from 'socket.io-client';
+const websocket = io();
 
 function setStage(active) {
     if (active === 'progress') {
@@ -21,9 +20,8 @@ function setStage(active) {
 }
 
 function message(command, data) {
-    data['command'] = command;
-    console.log(data);
-    websocket.send(JSON.stringify(data));
+    console.log(command, data);
+    websocket.emit(command, data);
 }
 
 $('#query-form').on('submit', (event) => {
@@ -53,44 +51,39 @@ $('#edit-form').on('submit', (event) => {
     });
 });
 
-websocket.addEventListener('message', ({ data }) => {
-    let event = JSON.parse(data);
-    console.log(event);
+websocket.on('progress', (event) => {
+    $('#progress-message').text(event['message']);
+    $('#progress-done').width(event['percentage'] + '%');
+    $('#progress-done').text(event['percentage'] + '%');
+});
 
-    if (event['command'] == 'progress') {
-        $('#progress-message').text(event['message']);
-        $('#progress-done').width(event['percentage'] + '%');
-        $('#progress-done').text(event['percentage'] + '%');
-    }
+websocket.on('editor', (event) => {
+    $('#video-cover-art').attr('src', event['thumbnail']);
+    $('#video-name').text(event['name']);
+    $('#video-uploader').text(event['uploader']);
 
-    if (event['command'] == 'editor') {
-        $('#video-cover-art').attr('src', event['thumbnail']);
-        $('#video-name').text(event['name']);
-        $('#video-uploader').text(event['uploader']);
+    $('#edit-title').val(event['title']);
+    $('#edit-album').val(event['album']);
+    $('#edit-genre').val(event['genre']);
+    $('#edit-artist-first-0').val(event['artist']);
 
-        $('#edit-title').val(event['title']);
-        $('#edit-album').val(event['album']);
-        $('#edit-genre').val(event['genre']);
-        $('#edit-artist-first-0').val(event['artist']);
+    romanizeArtist(0);
+    setStage('edit');
+});
 
-        romanizeArtist(0);
-        setStage('edit');
-    }
+websocket.on('romanized', (event) => {
+    $('#edit-artist-romaji-' + event['number']).val(event['text']);
+});
 
-    if (event['command'] == 'romanized') {
-        $('#edit-artist-romaji-' + event['number']).val(event['text']);
-    }
+websocket.on('finish', (event) => {
+    let anchor = $('<a>');
+    anchor.attr('href', event['href']);
+    anchor.attr('download', event['download'] + '.mp3');
+    anchor.addClass('disabled');
 
-    if (event['command'] == 'finish') {
-        let anchor = $('<a>');
-        anchor.attr('href', event['href']);
-        anchor.attr('download', event['download'] + '.mp3');
-        anchor.addClass('disabled');
-
-        $('body').append(anchor);
-        anchor[0].click();
-        anchor.remove();
-    }
+    $('body').append(anchor);
+    anchor[0].click();
+    anchor.remove();
 });
 
 function romanizeArtist(number) {

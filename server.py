@@ -1,5 +1,4 @@
-import asyncio
-import websockets
+import socketio
 import json
 from secrets import choice
 from pathlib import Path, PurePosixPath
@@ -127,39 +126,25 @@ class Downloader:
         }
 
 
-async def handler(websocket):
-    downloader = Downloader()
-
-    while True:
-        try:
-            message = await websocket.recv()
-
-            data = json.loads(message)
-            command = data.pop('command')
-            for command, data in downloader.process(command, data):
-                data['command'] = command
-
-                await websocket.send(json.dumps(data))
-                await asyncio.sleep(0)
-        except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
-            break
+sio = socketio.Server(cors_allowed_origins="*")
+app = socketio.WSGIApp(sio)
+connections = {}
 
 
-async def main():
-    loop = asyncio.get_running_loop()
-    stop = loop.create_future()
-
-    def signal_to_stop(_1, _2):
-        stop.set_result(None)
-
-    signal(SIGTERM, signal_to_stop)
-    signal(SIGINT, signal_to_stop)
-
-    port = int(getenv('PORT', '5555'))
-    host = getenv('HOST', 'localhost')
-    async with websockets.serve(handler, host, port):
-        await stop
+@sio.event
+def connect(sid, _1, _2):
+    print('connected')
+    connections[sid] = Downloader()
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+@sio.event
+def disconnect(sid):
+    print('disconnected')
+    del connections[sid]
+
+
+@sio.on('*')
+def process(command, sid, data):
+    print(command, data)
+    for command, data in connections[sid].process(command, data):
+        sio.emit(command, data, sid)

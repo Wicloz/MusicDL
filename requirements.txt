@@ -1,3 +1,4 @@
-websockets
+python-socketio
 mutagen
 Unidecode
+eventlet
