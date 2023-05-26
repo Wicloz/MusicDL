@@ -132,12 +132,12 @@ connections = {}
 
 
 @sio.event
-def connect(sid, _1, _2):
+def connect(sid, *_):
     connections[sid] = Downloader()
 
 
 @sio.event
-def disconnect(sid):
+def disconnect(sid, *_):
     del connections[sid]
 
 
