@@ -1,2 +1,2 @@
 rsync --recursive --delete ./built/ ./public/
-gunicorn server:app
+uvicorn --host "$HOST" --port "$PORT" server:app

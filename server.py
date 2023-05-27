@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from unidecode import unidecode
 from os import listdir, getenv
 from signal import signal, SIGTERM, SIGINT
+import asyncio
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -126,8 +127,8 @@ class Downloader:
         }
 
 
-sio = socketio.Server(cors_allowed_origins="*")
-app = socketio.WSGIApp(sio)
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+app = socketio.ASGIApp(sio)
 connections = {}
 
 
@@ -142,6 +143,7 @@ def disconnect(sid, *_):
 
 
 @sio.on('*')
-def process(command, sid, data):
+async def process(command, sid, data):
     for command, data in connections[sid].process(command, data):
-        sio.emit(command, data, sid)
+        await sio.emit(command, data, sid)
+        await asyncio.sleep(0)

@@ -16,7 +16,8 @@ RUN npm run build
 FROM alpine
 
 # install additional packages
-RUN apk add --no-cache py3-gunicorn yt-dlp rsync
+RUN apk add --no-cache yt-dlp rsync
+RUN apk add --no-cache py3-pip && pip3 install uvicorn && apk del --no-cache py3-pip
 
 # install PIP requirements
 COPY requirements.txt /app/
