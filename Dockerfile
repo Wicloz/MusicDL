@@ -42,5 +42,5 @@ USER 1000:1000
 
 # start websocket server
 EXPOSE 5555
-ENV HOST='websocket' PORT='5555'
+ENV HOST='0.0.0.0' PORT='5555'
 ENTRYPOINT /app/entrypoint.sh
