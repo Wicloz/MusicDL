@@ -16,23 +16,24 @@ EasyID3.RegisterTXXXKey('description', 'description')
 
 
 class Downloader:
-    def __init__(self):
+    def __init__(self, emitter):
         self.temp = Path(TemporaryDirectory(dir='public/downloads').name)
         self.web = PurePosixPath('/downloads/') / self.temp.name
+        self.emit = emitter
 
-    def process(self, command, data):
+    async def process(self, command, data):
         if command == 'download':
-            return self._process_initial_download(**data)
+            await self._process_initial_download(**data)
         if command == 'edited':
-            return self._process_edited_metadata(**data)
+            await self._process_edited_metadata(**data)
         if command == 'romanize':
-            return self._romanize(**data)
+            await self._romanize(**data)
 
-    def _romanize(self, text, number):
-        yield 'romanized', {
+    async def _romanize(self, text, number):
+        await self.emit('romanized', {
             'text': unidecode(text).strip(),
             'number': number,
-        }
+        })
 
     @staticmethod
     def _extract(metadata, *keys):
@@ -41,8 +42,8 @@ class Downloader:
                 return metadata[key]
         return ''
 
-    def _process_initial_download(self, url):
-        yield 'progress', {'percentage': 0, 'message': 'Preparing'}
+    async def _process_initial_download(self, url):
+        await self.emit('progress', {'percentage': 0, 'message': 'Preparing'})
 
         metadata = json.loads(run([
             'yt-dlp', url, '--dump-json',
@@ -80,7 +81,7 @@ class Downloader:
                 if percentage == 100:
                     break
 
-                yield 'progress', {'percentage': percentage, 'message': 'Downloading'}
+                await self.emit('progress', {'percentage': percentage, 'message': 'Downloading'})
                 percentage = 0
                 digits = 0
                 fraction = False
@@ -89,8 +90,8 @@ class Downloader:
                 digits = 0
                 fraction = False
 
-        yield 'progress', {'percentage': 100, 'message': 'Processing'}
         process.wait()
+        await self.emit('progress', {'percentage': 100, 'message': 'Processing'})
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['date'] = self._extract(metadata, 'upload_date')
@@ -99,7 +100,7 @@ class Downloader:
         mp3.save()
 
         thumbnail, = (item for item in listdir(self.temp) if item != 'ytdlp.mp3')
-        yield 'editor', {
+        await self.emit('editor', {
             'title': self._extract(metadata, 'track', 'title'),
             'genre': self._extract(metadata, 'genre'),
             'album': self._extract(metadata, 'album'),
@@ -107,9 +108,9 @@ class Downloader:
             'thumbnail': str(self.web / thumbnail),
             'uploader': self._extract(metadata, 'uploader'),
             'name': self._extract(metadata, 'title'),
-        }
+        })
 
-    def _process_edited_metadata(self, title, album, genre, artists):
+    async def _process_edited_metadata(self, title, album, genre, artists):
         artist_field = ' & '.join(artist['pretty'] for artist in artists)
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
@@ -121,26 +122,25 @@ class Downloader:
         mp3['artistsort'] = [artist['romanized'].lower() for artist in artists]
         mp3.save()
 
-        yield 'finish', {
+        await self.emit('finish', {
             'href': str(self.web / 'ytdlp.mp3'),
             'download': artist_field + ' - ' + title,
-        }
+        })
 
 
 async def handler(websocket):
-    downloader = Downloader()
+    async def emitter(command, data):
+        data['command'] = command
+        await websocket.send(json.dumps(data))
+        await asyncio.sleep(0)
+    downloader = Downloader(emitter)
 
     while True:
         try:
             message = await websocket.recv()
-
             data = json.loads(message)
             command = data.pop('command')
-            for command, data in downloader.process(command, data):
-                data['command'] = command
-
-                await websocket.send(json.dumps(data))
-                await asyncio.sleep(0)
+            await downloader.process(command, data)
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
             break
 
