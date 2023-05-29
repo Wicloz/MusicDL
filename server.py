@@ -3,11 +3,12 @@ import websockets
 import json
 from secrets import choice
 from pathlib import Path, PurePosixPath
-from subprocess import Popen, PIPE, run
+from asyncio.subprocess import create_subprocess_exec, PIPE
 from tempfile import TemporaryDirectory
 from unidecode import unidecode
 from os import listdir, getenv
 from signal import signal, SIGTERM, SIGINT
+import aiofiles
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -45,11 +46,7 @@ class Downloader:
     async def _process_initial_download(self, url):
         await self.emit('progress', {'percentage': 0, 'message': 'Preparing'})
 
-        metadata = json.loads(run([
-            'yt-dlp', url, '--dump-json',
-        ], stdout=PIPE).stdout)
-
-        process = Popen([
+        process = await create_subprocess_exec(
             'yt-dlp', url,
             '--output', self.temp / 'ytdlp',
             '--progress',
@@ -58,13 +55,15 @@ class Downloader:
             '--audio-format', 'mp3',
             '--embed-thumbnail',
             '--write-thumbnail',
-        ], stdout=PIPE)
+            '--write-info-json',
+            stdout=PIPE,
+        )
 
         percentage = 0
         digits = 0
         fraction = False
 
-        while character := process.stdout.read(1):
+        while character := await process.stdout.read(1):
             pass
 
             if character in {b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'}:
@@ -90,8 +89,14 @@ class Downloader:
                 digits = 0
                 fraction = False
 
-        process.wait()
         await self.emit('progress', {'percentage': 100, 'message': 'Processing'})
+        await process.wait()
+
+        async with aiofiles.open(self.temp / 'ytdlp.info.json', 'rb') as fp:
+            metadata = json.loads(await fp.read())
+
+        thumbnail, = (item for item in listdir(self.temp)
+                      if item != 'ytdlp.mp3' and item != 'ytdlp.info.json')
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['date'] = self._extract(metadata, 'upload_date')
@@ -99,7 +104,6 @@ class Downloader:
         mp3['purl'] = self._extract(metadata, 'webpage_url')
         mp3.save()
 
-        thumbnail, = (item for item in listdir(self.temp) if item != 'ytdlp.mp3')
         await self.emit('editor', {
             'title': self._extract(metadata, 'track', 'title'),
             'genre': self._extract(metadata, 'genre'),

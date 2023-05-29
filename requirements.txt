@@ -1,3 +1,4 @@
 websockets
 mutagen
 Unidecode
+aiofiles
