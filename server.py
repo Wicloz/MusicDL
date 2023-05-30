@@ -38,7 +38,7 @@ class Downloader:
         else:
             romanized = unidecode(text)
 
-        romanized = re.sub(r'[^ 0-9a-z]', '', re.sub(r'\s+', ' ', romanized.strip().lower()))
+        romanized = re.sub(r'\s+', ' ', romanized.strip().lower())
         await self.emit('romanized', {'text': romanized, 'number': number})
 
     @staticmethod
