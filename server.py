@@ -115,7 +115,7 @@ class Downloader:
         })
 
     async def _process_edited_metadata(self, title, album, genre, artists):
-        artist_field = ' & '.join(artist['pretty'] for artist in artists)
+        artist_field = ' · '.join(artist['pretty'] for artist in artists)
 
         mp3 = EasyID3(self.temp / 'ytdlp.mp3')
         mp3['title'] = title
