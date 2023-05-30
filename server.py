@@ -9,6 +9,8 @@ from unidecode import unidecode
 from os import listdir, getenv
 from signal import signal, SIGTERM, SIGINT
 import aiofiles
+from pykakasi import kakasi
+import re
 
 from mutagen.easyid3 import EasyID3
 EasyID3.RegisterTXXXKey('artists', 'ARTISTS')
@@ -30,11 +32,14 @@ class Downloader:
         if command == 'romanize':
             await self._romanize(**data)
 
-    async def _romanize(self, text, number):
-        await self.emit('romanized', {
-            'text': unidecode(text).strip(),
-            'number': number,
-        })
+    async def _romanize(self, text, number, script):
+        if script == 'japanese':
+            romanized = ' '.join(item['hepburn'] for item in kakasi().convert(text))
+        else:
+            romanized = unidecode(text)
+
+        romanized = re.sub(r'[^ 0-9a-z]', '', re.sub(r'\s+', ' ', romanized.strip().lower()))
+        await self.emit('romanized', {'text': romanized, 'number': number})
 
     @staticmethod
     def _extract(metadata, *keys):

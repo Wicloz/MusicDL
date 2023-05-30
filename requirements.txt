@@ -1,4 +1,5 @@
 websockets
 mutagen
-Unidecode
+unidecode
 aiofiles
+pykakasi

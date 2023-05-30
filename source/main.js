@@ -98,6 +98,7 @@ function romanizeArtist(number) {
     message('romanize', {
         text: (lastName ? lastName + ' ' : '') + $('#edit-artist-first-' + number).val(),
         number: number,
+        script: $('#edit-artist-script-' + number).val(),
     });
 }
 
@@ -159,6 +160,9 @@ function registerArtistOns(number) {
         romanizeArtist(number);
     });
 
+    $('#edit-artist-script-' + number).on('change', (event) => {
+        romanizeArtist(number);
+    });
     $('#edit-artist-romaji-' + number).on('change', (event) => {
         event.target.value = _.trim(event.target.value);
     });
