@@ -141,8 +141,7 @@ async def handler(websocket):
 
     while True:
         try:
-            message = await websocket.recv()
-            data = json.loads(message)
+            data = json.loads(await websocket.recv())
             command = data.pop('command')
             await downloader.process(command, data)
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
