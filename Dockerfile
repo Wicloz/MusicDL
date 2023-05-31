@@ -16,11 +16,11 @@ RUN npm run build
 FROM alpine
 
 # install additional packages
-RUN apk add --no-cache python3 yt-dlp rsync
+RUN apk add --no-cache python3 py3-pip yt-dlp rsync
 
 # install PIP requirements
 COPY requirements.txt /app/
-RUN apk add --no-cache py3-pip && pip3 install -r /app/requirements.txt && apk del --no-cache py3-pip
+RUN pip3 install -r /app/requirements.txt
 
 # copy static files from build container
 VOLUME /app/public/
