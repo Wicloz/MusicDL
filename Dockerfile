@@ -1,5 +1,5 @@
 # build container, requires node
-FROM node:alpine AS builder
+FROM node:lts-alpine AS builder
 WORKDIR /app/
 
 # install NPM packages
