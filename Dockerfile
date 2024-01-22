@@ -16,11 +16,11 @@ RUN npm run build
 FROM alpine
 
 # install additional packages
-RUN apk add --no-cache python3 py3-pip yt-dlp rsync
+RUN apk add --no-cache python3 yt-dlp rsync
 
 # install PIP requirements
 COPY requirements.txt /app/
-RUN pip3 install -r /app/requirements.txt
+RUN apk add --no-cache py3-pip && pip3 install --break-system-packages --requirement /app/requirements.txt && apk del --no-cache py3-pip
 
 # copy static files from build container
 VOLUME /app/public/
@@ -43,4 +43,4 @@ USER 1000:1000
 # start websocket server
 EXPOSE 5555
 ENV HOST='0.0.0.0' PORT='5555'
-ENTRYPOINT /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
