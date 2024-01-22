@@ -16,7 +16,7 @@ RUN npm run build
 FROM alpine
 
 # install additional packages
-RUN apk add --no-cache python3 yt-dlp rsync
+RUN apk add --no-cache python3 yt-dlp rsync py3-setuptools
 
 # install PIP requirements
 COPY requirements.txt /app/
