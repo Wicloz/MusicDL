@@ -6,10 +6,10 @@
     "build": "parcel build --dist-dir public"
   },
   "devDependencies": {
-    "@parcel/compressor-brotli": "^2.16.0",
-    "@parcel/compressor-gzip": "^2.16.0",
-    "@parcel/transformer-sass": "^2.16.0",
-    "parcel": "^2.16.0",
+    "@parcel/compressor-brotli": "^2.16.1",
+    "@parcel/compressor-gzip": "^2.16.1",
+    "@parcel/transformer-sass": "^2.16.1",
+    "parcel": "^2.16.1",
     "process": "^0.11.10"
   },
   "dependencies": {
